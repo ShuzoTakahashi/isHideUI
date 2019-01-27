@@ -124,45 +124,51 @@ class SampleKtListener : Listener() {
                         sweptAngle = (circle.progress() - previousUpdate.progress()).toDouble() * 2.0 * Math.PI
                     }
 
-                    println(
-                        "  Circle id: " + circle.id()
-                                + ", " + circle.state()
-                                + ", progress: " + circle.progress()
-                                + ", radius: " + circle.radius()
-                                + ", angle: " + Math.toDegrees(sweptAngle)
-                                + ", " + clockwiseness
-                    )
+//                    println(
+//                        "  Circle id: " + circle.id()
+//                                + ", " + circle.state()
+//                                + ", progress: " + circle.progress()
+//                                + ", radius: " + circle.radius()
+//                                + ", angle: " + Math.toDegrees(sweptAngle)
+//                                + ", " + clockwiseness
+//                    )
                 }
 
                 Gesture.Type.TYPE_SWIPE -> {
                     val swipe = SwipeGesture(gesture)
+//                    println(
+//                        "  Swipe id: " + swipe.id()
+//                                + ", " + swipe.state()
+//                                + ", position: " + swipe.position()
+//                                + ", direction: " + swipe.direction()
+//                                + ", speed: " + swipe.speed()
+//                    )
                     println(
-                        "  Swipe id: " + swipe.id()
-                                + ", " + swipe.state()
-                                + ", position: " + swipe.position()
-                                + ", direction: " + swipe.direction()
-                                + ", speed: " + swipe.speed()
+                        "swipeしたよ"
                     )
+                    val runtime = Runtime.getRuntime()
+                    val args = arrayOf("osascript", "-e", "tell app \"iTunes\" to play")
+                    val process = runtime.exec(args)
                 }
 
                 Gesture.Type.TYPE_SCREEN_TAP -> {
                     val screenTap = ScreenTapGesture(gesture)
-                    println(
-                        "  Screen Tap id: " + screenTap.id()
-                                + ", " + screenTap.state()
-                                + ", position: " + screenTap.position()
-                                + ", direction: " + screenTap.direction()
-                    )
+//                    println(
+//                        "  Screen Tap id: " + screenTap.id()
+//                                + ", " + screenTap.state()
+//                                + ", position: " + screenTap.position()
+//                                + ", direction: " + screenTap.direction()
+//                    )
                 }
 
                 Gesture.Type.TYPE_KEY_TAP -> {
                     val keyTap = KeyTapGesture(gesture)
-                    println(
-                        "  Key Tap id: " + keyTap.id()
-                                + ", " + keyTap.state()
-                                + ", position: " + keyTap.position()
-                                + ", direction: " + keyTap.direction()
-                    )
+//                    println(
+//                        "  Key Tap id: " + keyTap.id()
+//                                + ", " + keyTap.state()
+//                                + ", position: " + keyTap.position()
+//                                + ", direction: " + keyTap.direction()
+//                    )
                 }
 
                 else -> println("Unknown gesture type.")
