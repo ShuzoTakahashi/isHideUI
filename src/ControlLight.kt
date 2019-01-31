@@ -2,8 +2,36 @@ import java.io.IOException
 import java.lang.Math
 import com.leapmotion.leap.*
 import com.leapmotion.leap.Gesture.State
+import communication.ComTcpClient
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import communication.ComTcpClient.ComState.*
 
-class SampleKtListener : Listener() {
+class ControlLight : Listener() {
+    private val channel =
+        Channel<Enum<ComTcpClient.ComState>>().also { channel ->
+            GlobalScope.launch(Dispatchers.Main) {
+                when (channel.receive()) {
+
+                    MSG_IOEXCEPTION -> {
+                        // TODO : socketのclose処理
+                    }
+
+                    MSG_CONNECTION_FAILED -> {
+                        // TODO : socketのclose処理
+                    }
+
+                    MSG_CONNECTION_SUCCESS->{
+
+                    }
+                }
+            }
+        }
+    private val connection = ComTcpClient("", 5555, channel)
+
+
     override fun onInit(controller: Controller) {
         println("Initialized")
     }
@@ -142,19 +170,14 @@ class SampleKtListener : Listener() {
                                 + ", position: " + swipe.position()
                                 + ", direction: " + swipe.direction()
                                 + ", speed: " + swipe.speed()
-                                + "direction x :"+ swipe.direction().x
-                                + "direction y :"+ swipe.direction().y
+                                + "direction x :" + swipe.direction().x
+                                + "direction y :" + swipe.direction().y
                     )
 
-                    val runtime = Runtime.getRuntime()
-                    val args =
-                        if (swipe.direction().x >0) {
-                            arrayOf("osascript", "-e", "tell app \"iTunes\" back track")
-                        } else {
-                            arrayOf("osascript", "-e", "tell app \"iTunes\" to next track")
-                        }
-                    println(args)
-                    val process = runtime.exec(args)
+                    val ON = 301
+                    connection.getIO { output, _ ->
+                        output.write(ON)
+                    }
                 }
 
                 Gesture.Type.TYPE_SCREEN_TAP -> {
@@ -189,7 +212,7 @@ class SampleKtListener : Listener() {
 
 fun main(args: Array<String>) {
     // Create a sample listener and controller
-    val listener = SampleKtListener()
+    val listener = ControlLight()
     val controller = Controller()
 
     // Have the sample listener receive events from the controller

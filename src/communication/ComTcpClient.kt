@@ -15,7 +15,7 @@ import java.net.UnknownHostException
 class ComTcpClient(private val ip: String, private val port: Int, private val channel: Channel<Enum<ComState>>) {
 
     enum class ComState {
-        MSG_CONNECTION_SUCCESS, MSG_CONNECTION_FAILED, MSG_TCP_IOEXCEPTION
+        MSG_CONNECTION_SUCCESS, MSG_CONNECTION_FAILED, MSG_IOEXCEPTION
     }
 
     private var socket: Socket? = null
@@ -32,7 +32,7 @@ class ComTcpClient(private val ip: String, private val port: Int, private val ch
 
             } catch (e: IOException) {
                 print("IOException")
-                channel.send(ComState.MSG_TCP_IOEXCEPTION)
+                channel.send(ComState.MSG_IOEXCEPTION)
 
             } catch (e: UnknownHostException) {
                 print("UnknownHostException")
@@ -55,7 +55,7 @@ class ComTcpClient(private val ip: String, private val port: Int, private val ch
                         throw IllegalStateException()
                     }
                 } catch (e: IOException) {
-                    channel.send(ComState.MSG_TCP_IOEXCEPTION)
+                    channel.send(ComState.MSG_IOEXCEPTION)
                 }
             }
         }
@@ -70,7 +70,7 @@ class ComTcpClient(private val ip: String, private val port: Int, private val ch
 
                 } catch (e: IOException) {
                     print("close()にてエラー発生")
-                    channel.send(ComState.MSG_TCP_IOEXCEPTION)
+                    channel.send(ComState.MSG_IOEXCEPTION)
                 }
             }
         }
