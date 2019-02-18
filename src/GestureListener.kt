@@ -27,13 +27,14 @@ internal class GestureListener(private val connection: ComTcpClient) : Listener(
 
     override fun onFrame(controller: Controller) {
         if (!connection.isConnected) return
-        launch {
-            controller.frame().also { frame ->
+
+        controller.frame().also { frame ->
+            runBlocking{
                 frame.gestures().also { gestures ->
                     gestures.forEach { gesture ->
                         when (gesture.type()) {
                             Gesture.Type.TYPE_SWIPE -> {
-                                println("タップ")
+                                println("スワイプ")
 
                                 val swipe = SwipeGesture(gesture)
                                 var lightStateSwipe = false
@@ -41,6 +42,7 @@ internal class GestureListener(private val connection: ComTcpClient) : Listener(
                                 connection.getIO { output, _ ->
                                     output.write("on".toByteArray())
                                 }
+                                delay(800L)
                             }
 
                             Gesture.Type.TYPE_SCREEN_TAP -> {

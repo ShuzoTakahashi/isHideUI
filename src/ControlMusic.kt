@@ -3,7 +3,7 @@ import java.lang.Math
 import com.leapmotion.leap.*
 import com.leapmotion.leap.Gesture.State
 
-class ControlMusic : Listener() {
+internal class ControlMusic : Listener() {
     override fun onInit(controller: Controller) {
         println("Initialized")
     }

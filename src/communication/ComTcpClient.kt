@@ -30,17 +30,17 @@ class ComTcpClient(private val ip: String, private val port: Int, private val ch
 
     fun connect() {
         launch {
-            print("接続開始...")
+            println("接続開始...")
             try {
                 socket = Socket(ip, port)
                 channel.send(ComState.MSG_CONNECTION_SUCCESS)
 
             } catch (e: IOException) {
-                print("IOException")
+                println("IOException")
                 channel.send(ComState.MSG_IOEXCEPTION)
 
             } catch (e: UnknownHostException) {
-                print("UnknownHostException")
+                println("UnknownHostException")
                 channel.send(ComState.MSG_CONNECTION_FAILED)
             }
         }
@@ -55,7 +55,7 @@ class ComTcpClient(private val ip: String, private val port: Int, private val ch
                     if (socket.isConnected) {
                         func(socket.outputStream, socket.inputStream)
                     } else {
-                        print("接続されていない。")
+                        println("接続されていない")
                         channel.send(ComState.MSG_CONNECTION_FAILED)
                         throw IllegalStateException()
                     }
@@ -74,7 +74,7 @@ class ComTcpClient(private val ip: String, private val port: Int, private val ch
                     if (socket.isConnected) socket.close()
 
                 } catch (e: IOException) {
-                    print("close()にてエラー発生")
+                    println("close()にてエラー発生")
                     channel.send(ComState.MSG_IOEXCEPTION)
                 }
             }
