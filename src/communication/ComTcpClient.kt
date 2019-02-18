@@ -1,18 +1,23 @@
 package communication
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import java.io.*
 import java.net.Socket
 import java.net.UnknownHostException
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by shuzotakahashi on 2018/01/13.
  */
 
-class ComTcpClient(private val ip: String, private val port: Int, private val channel: Channel<Enum<ComState>>) {
+class ComTcpClient(private val ip: String, private val port: Int, private val channel: Channel<Enum<ComState>>) :
+    CoroutineScope {
+
+    private val job = Job()
+
+    override val coroutineContext: CoroutineContext
+        get() = job + Dispatchers.Default
 
     enum class ComState {
         MSG_CONNECTION_SUCCESS, MSG_CONNECTION_FAILED, MSG_IOEXCEPTION
@@ -24,7 +29,7 @@ class ComTcpClient(private val ip: String, private val port: Int, private val ch
         get() = socket?.isConnected ?: false
 
     fun connect() {
-        GlobalScope.launch(Dispatchers.Default) {
+        launch {
             print("接続開始...")
             try {
                 socket = Socket(ip, port)
@@ -43,9 +48,9 @@ class ComTcpClient(private val ip: String, private val port: Int, private val ch
 
     // TODO: リネーム
     fun getIO(func: (OutputStream, InputStream) -> Unit) {
-        if (socket == null) throw java.lang.IllegalStateException()
+        if (socket == null) throw IllegalStateException()
         socket?.also { socket ->
-            GlobalScope.launch(Dispatchers.Default) {
+            launch {
                 try {
                     if (socket.isConnected) {
                         func(socket.outputStream, socket.inputStream)
@@ -62,9 +67,9 @@ class ComTcpClient(private val ip: String, private val port: Int, private val ch
     }
 
     fun close() {
-        if (socket == null) throw java.lang.IllegalStateException()
+        if (socket == null) throw IllegalStateException()
         socket?.also { socket ->
-            GlobalScope.launch(Dispatchers.Default) {
+            launch {
                 try {
                     if (socket.isConnected) socket.close()
 
