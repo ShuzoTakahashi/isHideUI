@@ -10,9 +10,9 @@ import kotlinx.coroutines.launch
 import communication.ComTcpClient.ComState.*
 
 class ControlLight : Listener() {
-    private val channel =
+    private val channel by lazy {
         Channel<Enum<ComTcpClient.ComState>>().also { channel ->
-            GlobalScope.launch(Dispatchers.Main) {
+            GlobalScope.launch(Dispatchers.Default) {
                 when (channel.receive()) {
 
                     MSG_IOEXCEPTION -> {
@@ -23,13 +23,14 @@ class ControlLight : Listener() {
                         // TODO : socketのclose処理
                     }
 
-                    MSG_CONNECTION_SUCCESS->{
-
+                    MSG_CONNECTION_SUCCESS -> {
+                        print("らずぱいせつぞく")
                     }
                 }
             }
         }
-    private val connection = ComTcpClient("", 5555, channel)
+    }
+    private lateinit var connection: ComTcpClient
 
 
     override fun onInit(controller: Controller) {
@@ -44,6 +45,8 @@ class ControlLight : Listener() {
             enableGesture(Gesture.Type.TYPE_SCREEN_TAP)
             enableGesture(Gesture.Type.TYPE_KEY_TAP)
         }
+        connection = ComTcpClient("172.20.10.4", 55555, channel)
+        connection.connect()
     }
 
     override fun onDisconnect(controller: Controller) {
@@ -133,59 +136,55 @@ class ControlLight : Listener() {
             val gesture = gestures.get(i)
 
             when (gesture.type()) {
-                Gesture.Type.TYPE_CIRCLE -> {
-                    val circle = CircleGesture(gesture)
-
-                    // Calculate clock direction using the angle between circle normal and pointable
-                    val clockwiseness: String =
-                        if (circle.pointable().direction().angleTo(circle.normal()) <= Math.PI / 2) {
-                            // Clockwise if angle is less than 90 degrees
-                            "clockwise"
-                        } else {
-                            "counterclockwise"
-                        }
-
-                    // Calculate angle swept since last frame
-                    var sweptAngle = 0.0
-                    if (circle.state() != State.STATE_START) {
-                        val previousUpdate = CircleGesture(controller.frame(1).gesture(circle.id()))
-                        sweptAngle = (circle.progress() - previousUpdate.progress()).toDouble() * 2.0 * Math.PI
-                    }
-
-//                    println(
-//                        "  Circle id: " + circle.id()
-//                                + ", " + circle.state()
-//                                + ", progress: " + circle.progress()
-//                                + ", radius: " + circle.radius()
-//                                + ", angle: " + Math.toDegrees(sweptAngle)
-//                                + ", " + clockwiseness
-//                    )
-                }
 
                 Gesture.Type.TYPE_SWIPE -> {
+                    println("スワイプ")
                     val swipe = SwipeGesture(gesture)
-                    println(
-                        "Swipe id: " + swipe.id()
-                                + ", " + swipe.state()
-                                + ", position: " + swipe.position()
-                                + ", direction: " + swipe.direction()
-                                + ", speed: " + swipe.speed()
-                                + "direction x :" + swipe.direction().x
-                                + "direction y :" + swipe.direction().y
-                    )
+                    var lightStateSwipe = false
 
-                    val ON = 301
                     connection.getIO { output, _ ->
-                        output.write(ON)
+                        output.write("on".toByteArray())
                     }
+
+//                    if (lightStateSwipe == true ) {
+//                        connection.getIO { output, _ ->
+//                            output.write("off".toByteArray())
+//                            lightStateSwipe = false
+//                        }
+//                    } else {
+//                        connection.getIO { output, _ ->
+//                            output.write("on".toByteArray())
+//                            lightStateSwipe = true
+//                        }
+//                    }
                 }
 
                 Gesture.Type.TYPE_SCREEN_TAP -> {
+                    println("タップ")
                     val screenTap = ScreenTapGesture(gesture)
-//
+
+                    connection.getIO { output, _ ->
+                        output.write("on".toByteArray())
+                    }
+//                    var lightState = false
+
+//                    if (lightState == true ) {
+//                        connection.getIO { output, _ ->
+//                            output.write("off".toByteArray())
+//                            lightState = false;
+//                            println("けした！")
+//                        }
+//                    } else {
+//                        connection.getIO { output, _ ->
+//                            output.write("on".toByteArray())
+//                            lightState = true;
+//                            println("ついた！")
+//                        }
+//                    }
                 }
 
                 Gesture.Type.TYPE_KEY_TAP -> {
+                    println("key tap！")
                     val keyTap = KeyTapGesture(gesture)
                     println(
                         "  Key Tap id: " + keyTap.id()
@@ -193,10 +192,6 @@ class ControlLight : Listener() {
                                 + ", position: " + keyTap.position()
                                 + ", direction: " + keyTap.direction()
                     )
-
-                    val runtimeTap = Runtime.getRuntime()
-                    val argsTap = arrayOf("osascript", "-e", "tell app \"iTunes\" to playpause")
-                    val processTap = runtimeTap.exec(argsTap)
                 }
 
                 else -> println("Unknown gesture type.")

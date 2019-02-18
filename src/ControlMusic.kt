@@ -105,35 +105,6 @@ class ControlMusic : Listener() {
             val gesture = gestures.get(i)
 
             when (gesture.type()) {
-                Gesture.Type.TYPE_CIRCLE -> {
-                    val circle = CircleGesture(gesture)
-
-                    // Calculate clock direction using the angle between circle normal and pointable
-                    val clockwiseness: String =
-                        if (circle.pointable().direction().angleTo(circle.normal()) <= Math.PI / 2) {
-                            // Clockwise if angle is less than 90 degrees
-                            "clockwise"
-                        } else {
-                            "counterclockwise"
-                        }
-
-                    // Calculate angle swept since last frame
-                    var sweptAngle = 0.0
-                    if (circle.state() != State.STATE_START) {
-                        val previousUpdate = CircleGesture(controller.frame(1).gesture(circle.id()))
-                        sweptAngle = (circle.progress() - previousUpdate.progress()).toDouble() * 2.0 * Math.PI
-                    }
-
-//                    println(
-//                        "  Circle id: " + circle.id()
-//                                + ", " + circle.state()
-//                                + ", progress: " + circle.progress()
-//                                + ", radius: " + circle.radius()
-//                                + ", angle: " + Math.toDegrees(sweptAngle)
-//                                + ", " + clockwiseness
-//                    )
-                }
-
                 Gesture.Type.TYPE_SWIPE -> {
                     val swipe = SwipeGesture(gesture)
                     println(
@@ -159,17 +130,15 @@ class ControlMusic : Listener() {
 
                 Gesture.Type.TYPE_SCREEN_TAP -> {
                     val screenTap = ScreenTapGesture(gesture)
+
+                    val runtimeTap = Runtime.getRuntime()
+                    val argsTap = arrayOf("osascript", "-e", "tell app \"iTunes\" to playpause")
+                    val processTap = runtimeTap.exec(argsTap)
 //
                 }
 
                 Gesture.Type.TYPE_KEY_TAP -> {
                     val keyTap = KeyTapGesture(gesture)
-                    println(
-                        "  Key Tap id: " + keyTap.id()
-                                + ", " + keyTap.state()
-                                + ", position: " + keyTap.position()
-                                + ", direction: " + keyTap.direction()
-                    )
 
                     val runtimeTap = Runtime.getRuntime()
                     val argsTap = arrayOf("osascript", "-e", "tell app \"iTunes\" to playpause")
