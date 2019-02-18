@@ -1,14 +1,9 @@
-import java.io.IOException
 import com.leapmotion.leap.*
-import communication.ComTcpClient
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
-import java.lang.IllegalStateException
 import kotlin.coroutines.CoroutineContext
 
 internal class GestureListener(private val onSwipe: (Gesture) -> Unit, private val onScreenTap: (Gesture) -> Unit) :
-    Listener(),
-    CoroutineScope {
+    Listener(), CoroutineScope {
 
     private val job = Job()
     override val coroutineContext: CoroutineContext

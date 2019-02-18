@@ -69,7 +69,7 @@ class ComTcpClient(private val ip: String, private val port: Int, private val ch
     fun close() {
         if (socket == null) throw IllegalStateException()
         socket?.also { socket ->
-            launch {
+            runBlocking {
                 try {
                     if (socket.isConnected) socket.close()
 
