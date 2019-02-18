@@ -29,7 +29,7 @@ class ComTcpClient(private val ip: String, private val port: Int, private val ch
         get() = socket?.isConnected ?: false
 
     fun connect() {
-        launch {
+        runBlocking {
             println("接続開始...")
             try {
                 socket = Socket(ip, port)

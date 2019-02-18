@@ -3,9 +3,12 @@ import com.leapmotion.leap.*
 import communication.ComTcpClient
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import java.lang.IllegalStateException
 import kotlin.coroutines.CoroutineContext
 
-internal class GestureListener(private val connection: ComTcpClient) : Listener(), CoroutineScope {
+internal class GestureListener(private val onSwipe: (Gesture) -> Unit, private val onScreenTap: (Gesture) -> Unit) :
+    Listener(),
+    CoroutineScope {
 
     private val job = Job()
     override val coroutineContext: CoroutineContext
@@ -26,32 +29,21 @@ internal class GestureListener(private val connection: ComTcpClient) : Listener(
     override fun onExit(controller: Controller) = println("Exited")
 
     override fun onFrame(controller: Controller) {
-        if (!connection.isConnected) return
-
         controller.frame().also { frame ->
-            runBlocking{
+            runBlocking {
                 frame.gestures().also { gestures ->
                     gestures.forEach { gesture ->
                         when (gesture.type()) {
                             Gesture.Type.TYPE_SWIPE -> {
                                 println("スワイプ")
-
-                                val swipe = SwipeGesture(gesture)
-                                var lightStateSwipe = false
-
-                                connection.getIO { output, _ ->
-                                    output.write("on".toByteArray())
-                                }
+                                onSwipe(gesture)
                                 delay(800L)
                             }
 
                             Gesture.Type.TYPE_SCREEN_TAP -> {
                                 println("タップ")
-                                val screenTap = ScreenTapGesture(gesture)
-
-                                connection.getIO { output, _ ->
-                                    output.write("on".toByteArray())
-                                }
+                                onScreenTap(gesture)
+                                delay(800L)
                             }
                             else -> println("Unknown gesture type.")
                         }
@@ -60,44 +52,4 @@ internal class GestureListener(private val connection: ComTcpClient) : Listener(
             }
         }
     }
-}
-
-
-fun main() {
-
-    val channel = Channel<Enum<ComTcpClient.ComState>>().also { channel ->
-        GlobalScope.launch(Dispatchers.Default) {
-            when (channel.receive()) {
-
-                ComTcpClient.ComState.MSG_IOEXCEPTION -> {
-                    // TODO : socketのclose処理
-                }
-
-                ComTcpClient.ComState.MSG_CONNECTION_FAILED -> {
-                    // TODO : socketのclose処理
-                }
-
-                ComTcpClient.ComState.MSG_CONNECTION_SUCCESS -> {
-                    print("らずぱいせつぞく")
-                }
-            }
-        }
-    }
-
-    val connection = ComTcpClient("172.20.10.4", 55555, channel)
-    connection.connect()
-
-    val controller = Controller()
-    val listener = GestureListener(connection)
-
-    controller.addListener(listener)
-
-    println("Press Enter to quit... ")
-    try {
-        System.`in`.read()
-    } catch (e: IOException) {
-        e.printStackTrace()
-    }
-
-    controller.removeListener(listener)
 }
