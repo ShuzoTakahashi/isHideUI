@@ -6,6 +6,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 internal class ControliTunesListener : WithCoroutineListener() {
+    private var canSwipe = true
+    private var canTap = true
+
+    // デバッグ用
+    private var tapCnt = 0
+    private var swipeCnt = 0
+
     override fun onConnect(controller: Controller) {
         println("Connected")
         controller.apply {
@@ -19,38 +26,49 @@ internal class ControliTunesListener : WithCoroutineListener() {
             when (gesture.type()) {
                 Gesture.Type.TYPE_KEY_TAP -> {
                     runBlocking {
-                        println("タップ")
-                        Runtime.getRuntime().apply {
-                            val args = arrayOf("osascript", "-e", "tell app \"iTunes\" to playpause")
-                            launch {
-                                exec(args)
+                        if (canTap) {
+                            canTap = false
+                            Runtime.getRuntime().apply {
+                                val args = arrayOf("osascript", "-e", "tell app \"iTunes\" to playpause")
+                                launch {
+                                    exec(args)
+
+                                    tapCnt += 1
+                                    println("タップ: $tapCnt")
+                                }
                             }
+                            delay(150L)
+                            canTap = true
                         }
-                        delay(180L)
                     }
                 }
 
                 Gesture.Type.TYPE_SWIPE -> {
                     runBlocking {
-                        println("スワイプ")
-                        val swipe = SwipeGesture(gesture)
-                        Runtime.getRuntime().apply {
-                            val args =
-                                if (swipe.direction().x > 0) {
-                                    arrayOf("osascript", "-e", "tell app \"iTunes\" back track")
-                                } else {
-                                    arrayOf("osascript", "-e", "tell app \"iTunes\" to next track")
+                        if (canSwipe){
+                            canSwipe = false
+                            val swipe = SwipeGesture(gesture)
+                            Runtime.getRuntime().apply {
+                                val args =
+                                    if (swipe.direction().x > 0) {
+                                        arrayOf("osascript", "-e", "tell app \"iTunes\" back track")
+                                    } else {
+                                        arrayOf("osascript", "-e", "tell app \"iTunes\" to next track")
+                                    }
+                                launch {
+                                    exec(args)
+
+                                    swipeCnt += 1
+                                    println("スワイプ: $swipeCnt")
                                 }
-                            launch {
-                                exec(args)
                             }
+                            delay(640L)
+                            canSwipe = true
                         }
-                        delay(370L)
                     }
                 }
                 else -> println("Unknown gesture type.")
             }
         }
     }
-
 }
