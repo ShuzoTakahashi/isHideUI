@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 // listenerを作成
 internal class ControlLightListener(private val connection: ComTcpClient) : WithCoroutineListener() {
     private var isLightON = false
+    private var tapCnt = 0
 
     override fun onConnect(controller: Controller) {
         println("Connected")
@@ -16,11 +17,11 @@ internal class ControlLightListener(private val connection: ComTcpClient) : With
 
     override fun onFrame(controller: Controller) {
         controller.frame().gestures().forEach { gesture ->
-
             when (gesture.type()) {
                 Gesture.Type.TYPE_KEY_TAP -> {
                     runBlocking {
-                        println("タップ")
+                        tapCnt += 1
+                        println("タップ: $tapCnt")
                         connection.getIO { output, _ ->
                             isLightON = if (isLightON) {
                                 output.write("off".toByteArray())
@@ -30,7 +31,8 @@ internal class ControlLightListener(private val connection: ComTcpClient) : With
                                 true
                             }
                         }
-                        delay(180L)
+                        // 手元のMacBookProではこのくらいで良い
+                        delay(20L)
                     }
                 }
                 else -> println("Unknown gesture type.")
