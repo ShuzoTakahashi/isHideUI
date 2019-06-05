@@ -24,15 +24,14 @@ internal class ControliTunesListener : WithCoroutineListener() {
     override fun onFrame(controller: Controller) {
         controller.frame().gestures().forEach { gesture ->
             when (gesture.type()) {
+
                 Gesture.Type.TYPE_KEY_TAP -> {
                     runBlocking {
                         if (canTap) {
                             canTap = false
                             Runtime.getRuntime().apply {
-                                val args = arrayOf("osascript", "-e", "tell app \"iTunes\" to playpause")
-                                launch {
-                                    exec(args)
-
+                                arrayOf("osascript", "-e", "tell app \"iTunes\" to playpause").also { cmd ->
+                                    launch { exec(cmd) }
                                     tapCnt += 1
                                     println("タップ: $tapCnt")
                                 }
@@ -45,19 +44,16 @@ internal class ControliTunesListener : WithCoroutineListener() {
 
                 Gesture.Type.TYPE_SWIPE -> {
                     runBlocking {
-                        if (canSwipe){
+                        if (canSwipe) {
                             canSwipe = false
                             val swipe = SwipeGesture(gesture)
                             Runtime.getRuntime().apply {
-                                val args =
-                                    if (swipe.direction().x > 0) {
-                                        arrayOf("osascript", "-e", "tell app \"iTunes\" back track")
-                                    } else {
-                                        arrayOf("osascript", "-e", "tell app \"iTunes\" to next track")
-                                    }
-                                launch {
-                                    exec(args)
-
+                                if (swipe.direction().x > 0) {
+                                    arrayOf("osascript", "-e", "tell app \"iTunes\" back track")
+                                } else {
+                                    arrayOf("osascript", "-e", "tell app \"iTunes\" to next track")
+                                }.also { cmd ->
+                                    launch { exec(cmd) }
                                     swipeCnt += 1
                                     println("スワイプ: $swipeCnt")
                                 }

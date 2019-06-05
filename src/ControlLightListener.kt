@@ -44,7 +44,6 @@ internal class ControlLightListener(private val connection: ComTcpClient) : With
                 }
                 else -> println("Unknown gesture type.")
             }
-
         }
     }
 

@@ -1,6 +1,4 @@
 import com.leapmotion.leap.Controller
-import com.leapmotion.leap.Gesture
-import com.leapmotion.leap.SwipeGesture
 import communication.ComTcpClient
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
